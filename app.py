@@ -102,6 +102,9 @@ st.divider()
 
 # Create a sidebar with info
 with st.sidebar:
+    st.header("Configuration")
+    api_endpoint = st.text_input("API Endpoint", API_URL)
+    st.write("---")
     st.markdown("<h3 class='header-text'>How It Works</h3>", unsafe_allow_html=True)
     st.markdown("""
     1. Upload an image
