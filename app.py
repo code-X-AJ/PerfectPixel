@@ -121,7 +121,7 @@ with st.sidebar:
 def enhance_image(uploaded_file):
     try:
         # Replace with your actual API endpoint
-        api_url = "https://perfectpixel.onrender.com"
+        api_url = "https://perfectpixel.onrender.com/enhance-image"
         files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
         response = requests.post(api_url, files=files)
         
