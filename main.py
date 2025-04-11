@@ -37,7 +37,7 @@ format_instructions = output_parser.get_format_instructions()
 
 # Create a LangChain prompt template
 prompt_template = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert image enhancement assistant. Try applying some strong effects."),
+    ("system", "You are an expert image enhancement assistant."),
     ("human", """
     Based on the following image metrics:
     - Brightness: {brightness} (0-255 scale)
