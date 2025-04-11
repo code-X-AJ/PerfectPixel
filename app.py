@@ -100,6 +100,8 @@ with col2:
 
 st.divider()
 
+API_URL = "https://perfectpixel.onrender.com"  # Change if your FastAPI runs on different port
+
 # Create a sidebar with info
 with st.sidebar:
     st.header("Configuration")
