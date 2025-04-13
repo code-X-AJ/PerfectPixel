@@ -19,7 +19,7 @@ def load_lottieurl(url: str):
 
 # Set page config
 st.set_page_config(
-    page_title="AI Image Enhancer",
+    page_title="AI Vision Image Enhancer",
     page_icon="🖼️",
     layout="wide"
 )
@@ -67,6 +67,13 @@ st.markdown("""
         margin-bottom: 20px;
         background-color: #f8f9fa;
     }
+    .image-description {
+        background-color: #eaf2f8;
+        border-radius: 10px;
+        padding: 15px;
+        border-left: 5px solid #3498db;
+        margin-bottom: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -77,8 +84,10 @@ if 'enhanced_image' not in st.session_state:
     st.session_state.enhanced_image = None
 if 'metrics' not in st.session_state:
     st.session_state.metrics = None
-if 'params' not in st.session_state:
-    st.session_state.params = None
+if 'enhancement_parameters' not in st.session_state:
+    st.session_state.enhancement_parameters = None
+if 'image_description' not in st.session_state:
+    st.session_state.image_description = None
 if 'processing' not in st.session_state:
     st.session_state.processing = False
 if 'file_processed' not in st.session_state:
@@ -95,19 +104,26 @@ with col1:
     else:
         st.image("https://www.svgrepo.com/show/530453/image-editing.svg", width=150)
 with col2:
-    st.markdown("<h1 class='header-text'>AI Image Enhancer</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='subheader-text'>Upload an image and let AI enhance it automatically based on image metrics</p>", unsafe_allow_html=True)
+    st.markdown("<h1 class='header-text'>AI Vision Image Enhancer</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='subheader-text'>Upload an image and let our AI vision model enhance it and describe what it sees</p>", unsafe_allow_html=True)
 
 st.divider()
 
+API_URL = "https://perfectpixel.onrender.com"
+
 # Create a sidebar with info
 with st.sidebar:
+    st.header("Configuration")
+    api_endpoint = st.text_input("API Endpoint", API_URL)
+    st.write("---")
+
     st.markdown("<h3 class='header-text'>How It Works</h3>", unsafe_allow_html=True)
     st.markdown("""
     1. Upload an image
-    2. Our system analyzes the image's brightness, contrast, and sharpness
-    3. AI determines optimal enhancement parameters
-    4. The image is enhanced using these parameters
+    2. Our AI vision model analyzes the image content
+    3. The model generates a description of what it sees
+    4. The model determines optimal enhancement parameters
+    5. The image is enhanced using these parameters
     """)
     
     st.markdown("<h3 class='header-text'>Image Metrics Explained</h3>", unsafe_allow_html=True)
@@ -121,15 +137,20 @@ with st.sidebar:
 def enhance_image(uploaded_file):
     try:
         # Replace with your actual API endpoint
-        api_url = "http://localhost:8000/enhance-image"
+        api_url = "https://perfectpixel.onrender.com/enhance-image"
         files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
         response = requests.post(api_url, files=files)
         
         if response.status_code == 200:
             result = response.json()
-            # Convert base64 image back to bytes
-            if isinstance(result["enhanced_image"], str):
+            
+            # Convert base64 images back to bytes
+            if "enhanced_image" in result and isinstance(result["enhanced_image"], str):
                 result["enhanced_image"] = base64.b64decode(result["enhanced_image"])
+            
+            if "original_image" in result and isinstance(result["original_image"], str):
+                result["original_image"] = base64.b64decode(result["original_image"])
+                
             return result
         else:
             st.error(f"API Error: {response.status_code}")
@@ -161,7 +182,7 @@ if uploaded_file is not None:
             st.session_state.current_file_name = uploaded_file.name
             
             # Process image with API
-            with st.spinner("Enhancing image with AI..."):
+            with st.spinner("AI is analyzing and enhancing your image..."):
                 st.session_state.processing = True
                 
                 # Progress bar animation
@@ -176,7 +197,8 @@ if uploaded_file is not None:
                     enhanced_image_bytes = result["enhanced_image"]
                     st.session_state.enhanced_image = Image.open(io.BytesIO(enhanced_image_bytes))
                     st.session_state.metrics = result["original_metrics"]
-                    st.session_state.params = result["params"]
+                    st.session_state.enhancement_parameters = result["enhancement_parameters"]
+                    st.session_state.image_description = result["image_description"]
                     st.session_state.file_processed = True
                 
                 st.session_state.processing = False
@@ -189,6 +211,13 @@ if uploaded_file is not None:
 # Display results
 if st.session_state.original_image is not None and st.session_state.enhanced_image is not None:
     st.markdown("<h2 class='header-text'>Results</h2>", unsafe_allow_html=True)
+    
+    # Image description
+    if st.session_state.image_description:
+        st.markdown("<div class='image-description'>", unsafe_allow_html=True)
+        st.markdown(f"<h3 class='subheader-text'>Image Description</h3>", unsafe_allow_html=True)
+        st.markdown(f"<p>{st.session_state.image_description}</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     
     # Image comparison
     col1, col2 = st.columns(2)
@@ -259,7 +288,7 @@ if st.session_state.original_image is not None and st.session_state.enhanced_ima
         st.markdown("<div class='enhancement-card'>", unsafe_allow_html=True)
         st.markdown("<h3 class='subheader-text'>Enhancement Parameters</h3>", unsafe_allow_html=True)
         
-        params = st.session_state.params
+        params = st.session_state.enhancement_parameters
         
         # Create a bar chart for the enhancement factors
         params_df = pd.DataFrame({
@@ -352,7 +381,8 @@ if st.session_state.original_image is not None and st.session_state.enhanced_ima
             st.session_state.original_image = None
             st.session_state.enhanced_image = None
             st.session_state.metrics = None
-            st.session_state.params = None
+            st.session_state.enhancement_parameters = None
+            st.session_state.image_description = None
             st.session_state.file_processed = False
             st.session_state.current_file_name = None
             st.rerun()
@@ -367,4 +397,4 @@ else:
 
 # Footer
 st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #7f8c8d;'>Powered by AI Image Enhancement Technology</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #7f8c8d;'>Powered by AI Vision Image Enhancement Technology</p>", unsafe_allow_html=True)
