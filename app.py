@@ -116,7 +116,6 @@ with st.sidebar:
     st.header("Configuration")
     api_endpoint = st.text_input("API Endpoint", API_URL)
     st.write("---")
-
     st.markdown("<h3 class='header-text'>How It Works</h3>", unsafe_allow_html=True)
     st.markdown("""
     1. Upload an image
@@ -397,4 +396,8 @@ else:
 
 # Footer
 st.markdown("<br><br>", unsafe_allow_html=True)
+<<<<<<< HEAD
 st.markdown("<p style='text-align: center; color: #7f8c8d;'>Powered by AI Vision Image Enhancement Technology</p>", unsafe_allow_html=True)
+=======
+st.markdown("<p style='text-align: center; color: #7f8c8d;'>Powered by AI Image Enhancement Technology</p>", unsafe_allow_html=True)
+>>>>>>> e688dc1f931a891242022d6a3caf310e6a8b3b95
